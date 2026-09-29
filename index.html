@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZOE Sports</title>
+  <style>
+    :root {
+      --bg1: #667eea;
+      --bg2: #764ba2;
+      --panel: #ffffff;
+      --muted: #efefef;
+      --text: #1f2937;
+      --accent: #667eea;
+      --accent-2: #f59e0b;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --road: #30343f;
+      --road-line: rgba(255,255,255,0.75);
+      --grass: #4caf50;
+      --track1: #a3e635;
+      --track2: #2dd4bf;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(1200px, 100%);
+      background: var(--panel);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+      padding: 28px 24px 18px;
+      text-align: center;
+      border-bottom: 5px solid #ffd54a;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      letter-spacing: 0.06em;
+    }
+
+    .topbar p {
+      margin: 10px 0 0;
+      font-size: 1.06rem;
+      opacity: 0.92;
+    }
+
+    .tabs {
+      display: flex;
+      background: #f3f5f9;
+      border-bottom: 2px solid #dde3f0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #475569;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 16px 10px;
+      border-bottom: 4px solid transparent;
+      transition: 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background: #edf1ff;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      background: white;
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel {
+      display: none;
+      padding: 28px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .game-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(102,126,234,0.2);
+    }
+
+    .stat-card small {
+      display: block;
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-card strong {
+      font-size: clamp(1.15rem, 2.5vw, 1.7rem);
+    }
+
+    .promo-box {
+      background: #f7f8fc;
+      border: 1px solid #e5e7eb;
+      border-left: 5px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      color: #374151;
+    }
+
+    .nitro-track {
+      width: 100%;
+      height: 20px;
+      background: #dfe6ee;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+      border: 1px solid #cfd8e3;
+    }
+
+    .nitro-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #facc15, #f59e0b, #ef4444);
+      border-radius: inherit;
+      transition: width 0.1s linear;
+    }
+
+    .arena {
+      position: relative;
+      width: 100%;
+      height: 570px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #60a5fa 0%, #7dd3fc 15%, #3ddc97 50%, #1b7a50 100%);
+      border: 4px solid rgba(255,255,255,0.45);
+      box-shadow: inset 0 0 35px rgba(255,255,255,0.15);
+    }
+
+    .grass {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(34,197,94,0.25), rgba(22,101,52,0.15));
+    }
+
+    .lane {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 18%;
+      border-left: 2px solid rgba(255,255,255,0.25);
+      border-right: 2px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .lane::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      transform: translateX(-50%);
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.9) 0,
+        rgba(255,255,255,0.9) 28px,
+        transparent 28px,
+        transparent 48px
+      );
+      opacity: 0.8;
+    }
+
+    .lane.l1 { left: 18%; }
+    .lane.l2 { left: 41%; }
+    .lane.l3 { left: 64%; }
+
+    .bike {
+      position: absolute;
+      width: 72px;
+      height: 90px;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: left 0.1s linear, transform 0.1s ease;
+      z-index: 5;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.18));
+    }
+
+    .bike::before,
+    .bike::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: #171717;
+      width: 16px;
+      height: 16px;
+      top: 58px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+    }
+
+    .bike::before { left: 10px; }
+    .bike::after { right: 10px; }
+
+    .bike-body {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 16px;
+      bottom: 18px;
+      border-radius: 12px 12px 18px 18px;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 3px solid rgba(255,255,255,0.3);
+      overflow: hidden;
+    }
+
+    .bike-body::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #f8d64e;
+      transform: translateX(-50%);
+    }
+
+    .bike-body::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 40%;
+      width: 44px;
+      height: 10px;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.28);
+      border-radius: 10px;
+    }
+
+    .bike-head {
+      position: absolute;
+      left: 54%;
+      top: 12px;
+      width: 14px;
+      height: 14px;
+      background: #fef3c7;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+    }
+
+    .bike-tail {
+      position: absolute;
+      left: 50%;
+      top: 56px;
+      width: 20px;
+      height: 6px;
+      border-radius: 4px;
+      background: #111827;
+      transform: translateX(-50%);
+    }
+
+    .opponent {
+      position: absolute;
+      width: 72px;
+      height: 90px;
+      left: 50%;
+      top: -120px;
+      z-index: 4;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.18));
+    }
+
+    .opponent .bike-body {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .obstacle {
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      left: 50%;
+      top: -80px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fb7185, #ef4444);
+      border: 3px solid rgba(255,255,255,0.5);
+      z-index: 3;
+      box-shadow: 0 6px 22px rgba(239,68,68,0.3);
+    }
+
+    .obstacle::before {
+      content: "!";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 2rem;
+      color: white;
+    }
+
+    .collectible {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      left: 50%;
+      top: -80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fef3c7, #facc15 60%, #f59e0b 100%);
+      border: 3px solid rgba(255,255,255,0.65);
+      z-index: 3;
+      box-shadow: 0 6px 22px rgba(245,158,11,0.35);
+    }
+
+    .collectible::before {
+      content: "N";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #78350f;
+      font-size: 1.3rem;
+    }
+
+    .game-message {
+      display: none;
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-align: center;
+      color: white;
+    }
+
+    .game-message.success { background: var(--success); }
+    .game-message.warning { background: var(--warning); }
+    .game-message.danger { background: var(--danger); }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    button.action {
+      flex: 1;
+      padding: 14px 18px;
+      border: none;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 18px rgba(102,126,234,0.18);
+    }
+
+    button.action:hover { transform: translateY(-2px); }
+    button.action.secondary {
+      background: #e6ecff;
+      color: #243b5f;
+      box-shadow: none;
+    }
+
+    button.action:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #374151;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid #dbe3f0;
+      font-size: 1rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .difficulty-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .difficulty-option {
+      padding: 12px 8px;
+      text-align: center;
+      border-radius: 10px;
+      border: 2px solid #dbe3f0;
+      background: #fff;
+      color: #374151;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .difficulty-option.selected {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 18px rgba(102,126,234,0.18);
+    }
+
+    .info-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px 18px;
+      color: #374151;
+      margin: 16px 0 18px;
+    }
+
+    ul.features {
+      margin: 10px 0 0 18px;
+      line-height: 1.6;
+      padding: 0;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .map-card {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+      padding: 18px 14px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .map-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 12px 24px rgba(102,126,234,0.18);
+    }
+
+    .map-card.selected {
+      border-color: #ffd54a;
+      box-shadow: 0 0 0 4px rgba(255,213,74,0.18);
+    }
+
+    .leaderboard {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .leaderboard th,
+    .leaderboard td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .leaderboard thead {
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: white;
+    }
+
+    .leaderboard tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .gold { font-weight: 900; color: #d4af37; }
+    .silver { font-weight: 900; color: #8a8a8a; }
+    .bronze { font-weight: 900; color: #b87333; }
+
+    @media (max-width: 840px) {
+      .setup-grid,
+      .game-stats,
+      .map-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .tabs { flex-wrap: wrap; }
+      .tab-btn { flex: 1 1 50%; }
+      .setup-grid,
+      .game-stats,
+      .map-grid,
+      .difficulty-grid { grid-template-columns: 1fr; }
+      .arena { height: 460px; }
+      .controls { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <h1>🚴 ZOE Sports</h1>
+      <p>Ultimate Bicycle Racing Experience</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="game">🎮 Game</button>
+      <button class="tab-btn" data-tab="setup">⚙️ Setup</button>
+      <button class="tab-btn" data-tab="maps">🗺️ Maps</button>
+      <button class="tab-btn" data-tab="racing">🏁 Racing Competition</button>
+    </div>
+
+    <div id="game" class="tab-panel active">
+      <div class="game-stats">
+        <div class="stat-card">
+          <small>PLAYER</small>
+          <strong id="playerNameDisplay">Player</strong>
+        </div>
+        <div class="stat-card">
+          <small>BICYCLE</small>
+          <strong id="bikeNameDisplay">Speed Bike</strong>
+        </div>
+        <div class="stat-card">
+          <small>SPEED</small>
+          <strong id="speedDisplay">0 km/h</strong>
+        </div>
+        <div class="stat-card">
+          <small>SCORE</small>
+          <strong id="scoreDisplay">0</strong>
+        </div>
+      </div>
+
+      <div class="promo-box">
+        <div><strong>Nitro boost</strong></div>
+        <div class="nitro-track"><div id="nitroFill" class="nitro-fill"></div></div>
+        <div style="margin-top: 8px; font-size: 0.9rem; color: #475569;">Use Space to fire nitro boost and Arrow Keys to steer.</div>
+      </div>
+
+      <div class="arena" id="arena">
+        <div class="grass"></div>
+        <div class="lane l1"></div>
+        <div class="lane l2"></div>
+        <div class="lane l3"></div>
+
+        <div class="bike" id="bike">
+          <div class="bike-head"></div>
+          <div class="bike-body"></div>
+          <div class="bike-tail"></div>
+        </div>
+        <div class="opponent" id="opponent">
+          <div class="bike-head"></div>
+          <div class="bike-body"></div>
+          <div class="bike-tail"></div>
+        </div>
+      </div>
+
+      <div id="gameMessage" class="game-message"></div>
+
+      <div class="controls">
+        <button id="startBtn" class="action">Start Race</button>
+        <button id="pauseBtn" class="action secondary" disabled>Pause</button>
+        <button id="resetBtn" class="action secondary">Reset</button>
+      </div>
+    </div>
+
+    <div id="setup" class="tab-panel">
+      <h2>Player Setup</h2>
+      <div class="setup-grid">
+        <div>
+          <div class="field">
+            <label for="playerName">Player Name</label>
+            <input id="playerName" type="text" value="Champion" maxlength="20" />
+          </div>
+
+          <div class="field">
+            <label for="bikeName">Bicycle Name</label>
+            <input id="bikeName" type="text" value="Thunder Bolt" maxlength="20" />
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block; font-weight:700; margin-bottom:12px;">Difficulty</label>
+          <div class="difficulty-grid">
+            <div class="difficulty-option selected" data-difficulty="easy">Easy</div>
+            <div class="difficulty-option" data-difficulty="medium">Medium</div>
+            <div class="difficulty-option" data-difficulty="hard">Hard</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <strong>Game Features</strong>
+        <ul class="features">
+          <li>Steer left and right to dodge traffic and barriers.</li>
+          <li>Build nitro to surge forward with a powerful boost.</li>
+          <li>Race against a rival rider in a full-speed sprint.</li>
+          <li>Switch maps and compete in the leaderboard.</li>
+        </ul>
+      </div>
+
+      <button id="saveSetupBtn" class="action" style="width:100%;">Save Setup</button>
+    </div>
+
+    <div id="maps" class="tab-panel">
+      <h2>Select a Track</h2>
+      <div class="map-grid">
+        <div class="map-card selected" data-map="beach"><div style="font-size:2rem;">🏖️</div><strong>Beach Road</strong><small>Easy</small></div>
+        <div class="map-card" data-map="mountain"><div style="font-size:2rem;">⛰️</div><strong>Mountain Pass</strong><small>Hard</small></div>
+        <div class="map-card" data-map="city"><div style="font-size:2rem;">🏙️</div><strong>City Sprint</strong><small>Medium</small></div>
+        <div class="map-card" data-map="forest"><div style="font-size:2rem;">🌲</div><strong>Forest Trail</strong><small>Medium</small></div>
+        <div class="map-card" data-map="desert"><div style="font-size:2rem;">🏜️</div><strong>Desert Run</strong><small>Hard</small></div>
+        <div class="map-card" data-map="tropical"><div style="font-size:2rem;">🌴</div><strong>Tropical Glide</strong><small>Easy</small></div>
+        <div class="map-card" data-map="winter"><div style="font-size:2rem;">❄️</div><strong>Snow Circuit</strong><small>Hard</small></div>
+        <div class="map-card" data-map="night"><div style="font-size:2rem;">🌙</div><strong>Night Rush</strong><small>Medium</small></div>
+      </div>
+
+      <div class="info-panel" style="margin-top:20px;">
+        <strong>Current Track:</strong> <span id="selectedMapText">Beach Road</span>
+      </div>
+    </div>
+
+    <div id="racing" class="tab-panel">
+      <h2>Racing Competition</h2>
+      <table class="leaderboard">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Bicycle</th>
+            <th>Best Time</th>
+            <th>Speed</th>
+            <th>Nitro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="gold">🥇 1st</td>
+            <td>Lightning King</td>
+            <td>Thunder Bolt</td>
+            <td>1:23.45</td>
+            <td>145 km/h</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td class="silver">🥈 2nd</td>
+            <td>Speed Racer</td>
+            <td>Wind Runner</td>
+            <td>1:28.90</td>
+            <td>142 km/h</td>
+            <td>7</td>
+          </tr>
+          <tr>
+            <td class="bronze">🥉 3rd</td>
+            <td>Pedal Master</td>
+            <td>Cycle Pro</td>
+            <td>1:35.22</td>
+            <td>138 km/h</td>
+            <td>6</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="game-stats" style="margin-top:22px;">
+        <div class="stat-card">
+          <small>GAMES</small>
+          <strong id="gamesPlayedStat">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>BEST SCORE</small>
+          <strong id="bestScoreStat">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>NITRO USED</small>
+          <strong id="nitroUsedStat">0</strong>
+        </div>
+        <div class="stat-card">
+          <small>MAX SPEED</small>
+          <strong id="maxSpeedStat">0 km/h</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const arena = document.getElementById('arena');
+    const bike = document.getElementById('bike');
+    const opponent = document.getElementById('opponent');
+    const nitroFill = document.getElementById('nitroFill');
+    const gameMessage = document.getElementById('gameMessage');
+    const playerNameInput = document.getElementById('playerName');
+    const bikeNameInput = document.getElementById('bikeName');
+    const playerNameDisplay = document.getElementById('playerNameDisplay');
+    const bikeNameDisplay = document.getElementById('bikeNameDisplay');
+    const speedDisplay = document.getElementById('speedDisplay');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const selectedMapText = document.getElementById('selectedMapText');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const saveSetupBtn = document.getElementById('saveSetupBtn');
+
+    const lanePositions = [18, 41, 64];
+    let laneIndex = 1;
+    let gameRunning = false;
+    let paused = false;
+    let score = 0;
+    let speed = 0;
+    let nitro = 100;
+    let baseSpeed = 120;
+    let difficulty = 'easy';
+    let selectedMap = 'beach';
+    let bestScore = 0;
+    let gamesPlayed = 0;
+    let totalNitroUsed = 0;
+    let maxSpeed = 0;
+
+    let animationFrame = null;
+    let lastTimestamp = 0;
+    let obstacleTimer = 0;
+    let collectibleTimer = 0;
+    let opponentTimer = 0;
+    let spawnInterval = 1000;
+
+    const obstacles = [];
+    const collectibles = [];
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === tab));
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    function selectDifficulty(value) {
+      difficulty = value;
+      document.querySelectorAll('.difficulty-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.difficulty === value);
+      });
+    }
+
+    function updatePlayerInfo() {
+      const playerName = playerNameInput.value.trim() || 'Player';
+      const bikeName = bikeNameInput.value.trim() || 'Speed Bike';
+      playerNameDisplay.textContent = playerName;
+      bikeNameDisplay.textContent = bikeName;
+      document.title = 'ZOE Sports - ' + playerName;
+    }
+
+    function syncDisplayStats() {
+      scoreDisplay.textContent = Math.floor(score);
+      speedDisplay.textContent = Math.floor(speed) + ' km/h';
+      nitroFill.style.width = nitro + '%';
+      document.getElementById('bestScoreStat').textContent = bestScore;
+      document.getElementById('gamesPlayedStat').textContent = gamesPlayed;
+      document.getElementById('nitroUsedStat').textContent = totalNitroUsed;
+      document.getElementById('maxSpeedStat').textContent = maxSpeed + ' km/h';
+    }
+
+    function setMessage(text, type = 'success') {
+      gameMessage.style.display = 'block';
+      gameMessage.textContent = text;
+      gameMessage.className = `game-message ${type}`;
+    }
+
+    function hideMessage() {
+      gameMessage.style.display = 'none';
+    }
+
+    function getLaneX(lane) {
+      const lanePercent = lanePositions[lane];
+      return (arena.clientWidth * lanePercent) / 100;
+    }
+
+    function updateBikePosition() {
+      const x = getLaneX(laneIndex);
+      bike.style.left = x + 'px';
+      bike.style.transform = 'translateX(-50%)';
+    }
+
+    function setMapTheme(mapName) {
+      selectedMap = mapName;
+      const mapMeta = {
+        beach: { label: 'Beach Road', sky: 'linear-gradient(180deg, #60a5fa 0%, #7dd3fc 15%, #3ddc97 50%, #1b7a50 100%)', accent: '#7dd3fc' },
+        mountain: { label: 'Mountain Pass', sky: 'linear-gradient(180deg, #93c5fd 0%, #dbeafe 30%, #86efac 60%, #357a45 100%)', accent: '#93c5fd' },
+        city: { label: 'City Sprint', sky: 'linear-gradient(180deg, #1e293b 0%, #334155 18%, #4ade80 55%, #1d4d3e 100%)', accent: '#fbbf24' },
+        forest: { label: 'Forest Trail', sky: 'linear-gradient(180deg, #8ecae6 0%, #b7e4c7 20%, #2e7d32 62%, #14532d 100%)', accent: '#86efac' },
+        desert: { label: 'Desert Run', sky: 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 28%, #f87171 58%, #854d0e 100%)', accent: '#facc15' },
+        tropical: { label: 'Tropical Glide', sky: 'linear-gradient(180deg, #38bdf8 0%, #14b8a6 22%, #34d399 55%, #166534 100%)', accent: '#a7f3d0' },
+        winter: { label: 'Snow Circuit', sky: 'linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 25%, #bfdbfe 52%, #1d4ed8 100%)', accent: '#e0f2fe' },
+        night: { label: 'Night Rush', sky: 'linear-gradient(180deg, #111827 0%, #1f2937 24%, #312e81 56%, #111827 100%)', accent: '#a78bfa' }
+      };
+
+      const meta = mapMeta[mapName] || mapMeta.beach;
+      arena.style.background = meta.sky;
+      selectedMapText.textContent = meta.label;
+      document.documentElement.style.setProperty('--accent', meta.accent);
+    }
+
+    function createObstacle() {
+      const obstacle = document.createElement('div');
+      obstacle.className = 'obstacle';
+      const lane = Math.floor(Math.random() * 3);
+      obstacle.style.left = getLaneX(lane) + 'px';
+      obstacle.style.transform = 'translateX(-50%)';
+      obstacle.dataset.lane = lane;
+      arena.appendChild(obstacle);
+      obstacles.push({
+        element: obstacle,
+        lane,
+        y: -80,
+        speed: 250 + Math.random() * 140 + (difficulty === 'hard' ? 90 : difficulty === 'medium' ? 45 : 0),
+        type: 'obstacle'
+      });
+    }
+
+    function createCollectible() {
+      const item = document.createElement('div');
+      item.className = 'collectible';
+      const lane = Math.floor(Math.random() * 3);
+      item.style.left = getLaneX(lane) + 'px';
+      item.style.transform = 'translateX(-50%)';
+      item.dataset.lane = lane;
+      arena.appendChild(item);
+      collectibles.push({
+        element: item,
+        lane,
+        y: -60,
+        speed: 220 + Math.random() * 80,
+        type: 'nitro'
+      });
+    }
+
+    function updateOpponent() {
+      const opponentLane = Math.floor(Math.random() * 3);
+      opponent.style.left = getLaneX(opponentLane) + 'px';
+      opponent.dataset.lane = opponentLane;
+      opponent.style.top = '-90px';
+      opponent.style.transform = 'translateX(-50%)';
+    }
+
+    function updateRaceObjects(delta) {
+      const speedMultiplier = Math.max(0.7, speed / (baseSpeed + 20));
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obj = obstacles[i];
+        obj.y += obj.speed * delta * speedMultiplier;
+        obj.element.style.top = `${obj.y}px`;
+
+        const sameLane = obj.lane === laneIndex;
+        if (sameLane && obj.y > arena.clientHeight - 110 && obj.y < arena.clientHeight - 15) {
+          const bikeCenter = bike.offsetLeft + bike.offsetWidth / 2;
+          const objCenter = obj.element.offsetLeft + obj.element.offsetWidth / 2;
+          if (Math.abs(bikeCenter - objCenter) < 40) {
+            gameOver('Crash! Your bike was hit.');
+            return;
+          }
+        }
+
+        if (obj.y > arena.clientHeight + 120) {
+          obj.element.remove();
+          obstacles.splice(i, 1);
+          score += 30;
+        }
+      }
+
+      for (let i = collectibles.length - 1; i >= 0; i--) {
+        const obj = collectibles[i];
+        obj.y += obj.speed * delta * (speedMultiplier + 0.15);
+        obj.element.style.top = `${obj.y}px`;
+
+        if (obj.lane === laneIndex && obj.y > arena.clientHeight - 105 && obj.y < arena.clientHeight - 10) {
+          const bikeCenter = bike.offsetLeft + bike.offsetWidth / 2;
+          const objCenter = obj.element.offsetLeft + obj.element.offsetWidth / 2;
+          if (Math.abs(bikeCenter - objCenter) < 38) {
+            nitro = Math.min(100, nitro + 40);
+            totalNitroUsed += 1;
+            setMessage('Nitro boost collected!', 'success');
+            obj.element.remove();
+            collectibles.splice(i, 1);
+            score += 50;
+            continue;
+          }
+        }
+
+        if (obj.y > arena.clientHeight + 120) {
+          obj.element.remove();
+          collectibles.splice(i, 1);
+        }
+      }
+
+      opponent.style.top = `${Math.max(-100, (arena.clientHeight * 0.12) + (Math.sin(Date.now() / 260) * 20))}px`;
+    }
+
+    function gameLoop(timestamp) {
+      if (!gameRunning || paused) {
+        animationFrame = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (difficulty === 'easy') spawnInterval = 1100;
+      if (difficulty === 'medium') spawnInterval = 850;
+      if (difficulty === 'hard') spawnInterval = 650;
+
+      obstacleTimer += delta * 1000;
+      collectibleTimer += delta * 1000;
+      opponentTimer += delta * 1000;
+
+      score += delta * (speed * 0.18);
+      if (gameRunning && !paused) {
+        speed += (baseSpeed * delta) * 0.7;
+      }
+
+      if (nitro < 100) nitro += delta * 7;
+      if (nitro > 100) nitro = 100;
+
+      if (obstacleTimer > spawnInterval) {
+        createObstacle();
+        obstacleTimer = 0;
+      }
+
+      if (collectibleTimer > 2500) {
+        createCollectible();
+        collectibleTimer = 0;
+      }
+
+      if (opponentTimer > 7000) {
+        updateOpponent();
+        opponentTimer = 0;
+      }
+
+      updateRaceObjects(delta);
+      syncDisplayStats();
+      animationFrame = requestAnimationFrame(gameLoop);
+    }
+
+    function useNitro() {
+      if (!gameRunning || paused) return;
+      if (nitro >= 25) {
+        nitro -= 25;
+        totalNitroUsed += 1;
+        speed += 120;
+        maxSpeed = Math.max(maxSpeed, Math.floor(speed));
+        setMessage('Nitro boost activated!', 'warning');
+      } else {
+        setMessage('Nitro is too low. Keep racing!', 'danger');
+      }
+      syncDisplayStats();
+    }
+
+    function startGame() {
+      if (gameRunning && !paused) return;
+      gameRunning = true;
+      paused = false;
+      lastTimestamp = 0;
+      pauseBtn.disabled = false;
+      pauseBtn.textContent = 'Pause';
+      setMessage('Race started! Good luck!', 'success');
+      startBtn.textContent = 'Restart Race';
+      if (!animationFrame) {
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+    }
+
+    function togglePause() {
+      if (!gameRunning) return;
+      paused = !paused;
+      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+      if (!paused) {
+        setMessage('Race resumed!', 'success');
+      } else {
+        setMessage('Race paused.', 'warning');
+      }
+    }
+
+    function resetGame() {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+      gameRunning = false;
+      paused = false;
+      score = 0;
+      speed = 100;
+      nitro = 100;
+      obstacleTimer = 0;
+      collectibleTimer = 0;
+      opponentTimer = 0;
+      laneIndex = 1;
+      updateBikePosition();
+      obstacles.forEach(o => o.element.remove());
+      collectibles.forEach(c => c.element.remove());
+      obstacles.length = 0;
+      collectibles.length = 0;
+      hideMessage();
+      pauseBtn.disabled = true;
+      pauseBtn.textContent = 'Pause';
+      startBtn.textContent = 'Start Race';
+      syncDisplayStats();
+    }
+
+    function gameOver(msg) {
+      gameRunning = false;
+      paused = false;
+      pauseBtn.disabled = true;
+      pauseBtn.textContent = 'Pause';
+      bestScore = Math.max(bestScore, Math.floor(score));
+      gamesPlayed += 1;
+      maxSpeed = Math.max(maxSpeed, Math.floor(speed));
+      setMessage(msg, 'danger');
+      syncDisplayStats();
+    }
+
+    function saveSetup() {
+      updatePlayerInfo();
+      setMessage('Setup saved successfully!', 'success');
+      switchTab('game');
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        laneIndex = Math.max(0, laneIndex - 1);
+        updateBikePosition();
+        event.preventDefault();
+      }
+
+      if (event.key === 'ArrowRight') {
+        laneIndex = Math.min(2, laneIndex + 1);
+        updateBikePosition();
+        event.preventDefault();
+      }
+
+      if (event.key === 'ArrowUp') {
+        if (gameRunning && !paused) {
+          speed = Math.min(speed + 20, 220);
+        }
+        event.preventDefault();
+      }
+
+      if (event.code === 'Space') {
+        useNitro();
+        event.preventDefault();
+      }
+    });
+
+    document.querySelectorAll('.difficulty-option').forEach(opt => {
+      opt.addEventListener('click', () => selectDifficulty(opt.dataset.difficulty));
+    });
+
+    document.querySelectorAll('.map-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.map-card').forEach(c => c.classList.toggle('selected', c === card));
+        setMapTheme(card.dataset.map);
+      });
+    });
+
+    startBtn.addEventListener('click', () => { resetGame(); startGame(); });
+    pauseBtn.addEventListener('click', togglePause);
+    resetBtn.addEventListener('click', resetGame);
+    saveSetupBtn.addEventListener('click', saveSetup);
+
+    updatePlayerInfo();
+    setMapTheme(selectedMap);
+    updateBikePosition();
+    syncDisplayStats();
+    resetGame();
+  </script>
+</body>
+</html>
